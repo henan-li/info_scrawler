@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>获取信息</title>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+</head>
+<body>
+<div class="content">
+    <form action="/info">
+        <span>事务所名称：</span>
+        <input name="name" type="text" class="input3" size="20" maxlength="30" value=""><br><br>
+        <span>统一社会信用代码：</span>
+        <input name="creditCode" type="text" class="input3" size="20" maxlength="30" value=""><br><br>
+        <span>所属区县：</span>
+        <select name="justiceBureauId" class="input3">
+            <option value="">请选择所属区县</option>
+
+            <option value="79d3c52d7faa426bb2dbb806eb4bd71f">深圳市</option>
+
+            <option value="60ad170469594cb68d8d496f54a5c43c">罗湖区</option>
+
+            <option value="e35767083a954dbeaef0df6a7e475eb9">福田区</option>
+
+            <option value="bc7a1699b48745338363df6206864945">南山区</option>
+
+            <option value="0858717af6c949c9b24d1d22eb0de59d">龙岗区</option>
+
+            <option value="f5ac32e6cf4b4502a7c29370c904b49f">盐田区</option>
+
+            <option value="54d1fc8e5ee84a2094d9a897e708ded7">宝安区</option>
+
+            <option value="0ff4fe6feb2f462aa795cce81d2d934f">光明区</option>
+
+            <option value="a342cc8916154db190cc89749a01fd27">坪山区</option>
+
+            <option value="227a4c3c8c0d4b5fb027883ba90fa183">大鹏新区</option>
+
+            <option value="b1a6d5419a124e0f979e8e9a88af668f">龙华区</option>
+
+            <option value="d759f5d88fa6435cad37dd82885f68ef">前海区</option>
+
+        </select><br><br>
+
+        <span>设立时间，由：</span>
+        <input name="beginPracticeLicenseDate" id="_beginPracticeLicenseDate" type="text" class="input3 hasDatepicker"
+               size="20" maxlength="20" value=""> <span style="color: red">(*时间格式：yyyy-mm-dd)</span><br><br>
+
+        <span>到：</span>
+        <input name="endPracticeLicenseDate" id="_endPracticeLicenseDate" type="text" class="input3 hasDatepicker"
+               size="20" maxlength="20" value=""><br><br>
+        <span>组织形式</span>
+        <select name="lawFirmType" class="input3">
+            <option value="">请选择组织形式</option>
+
+            <option value="592f86a85a9b4b3d98e24db19f3ae93b">普通合伙</option>
+
+            <option value="235bbe7b44ea4eb381e816e7436f8afa">个人</option>
+
+        </select><br><br>
+        <span>律师人数</span>
+        <select name="scale" class="input3">
+
+            <option value="">请选择律所规模</option>
+            <option value="0">10人以下</option>
+            <option value="10">10-20人</option>
+            <option value="20">20-30人</option>
+            <option value="30">30-50人</option>
+            <option value="50">50-100人</option>
+            <option value="100">100人以上</option>
+        </select><br><br>
+        <div>
+            <button type="submit">提交</button>
+        </div>
+    </form>
+</div>
+
+{{.}}
+
+</body>
+</html>
