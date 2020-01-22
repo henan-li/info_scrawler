@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"encoding/csv"
@@ -8,7 +8,11 @@ import (
 	"os"
 )
 
-func main() {
+var(
+	baseUrl = "http://www.szlawyers.com"
+)
+
+func DoWork(query string) {
 	fName := "lawFirmDetails.csv"
 	file, err := os.Create(fName)
 	if err != nil {
@@ -20,19 +24,25 @@ func main() {
 	defer writer.Flush()
 
 	// Write CSV header
-	writer.Write([]string{"律所名称", "设立时间", "负责人", "律师人数", "联系电话"})
+	writer.Write([]string{"律所名称", "设立时间", "负责人", "律师人数", "联系电话", "详情链接"})
 
 	// Instantiate default collector
 	c := colly.NewCollector()
 
-	c.OnHTML(".tab_list tbody tr", func(e *colly.HTMLElement) {
+	c.OnHTML("tbody tr:not(:first-child, :last-child)", func(e *colly.HTMLElement) {
 
-		res := e.ChildTexts("tr[bgcolor=\"#f0f0f0\"] td")
-		fmt.Println(len(res))
-		writer.Write(res)
+		// 流程: (注意:他是一次一个的去找,因此每一个row就对应页面上的一个row) 从tbody tr下面找td,然后将他的文本内容都取出来
+		// 然后在往当前row中动态追加一个url
+		// 最后写入csv,然后开始下一轮查找
+		row := e.ChildTexts("td")
+		link := e.Request.AbsoluteURL(e.ChildAttr("a", "href"))
+		row = append(row,link)
+		writer.Write(row)
 	})
 
-	c.Visit("http://www.szlawyers.com/searchLawFirm?name=&creditCode=&justiceBureauId=&officeZone=&beginPracticeLicenseDate=&endPracticeLicenseDate=&lawFirmType=&scale=100&x=27&y=13")
+	url := baseUrl+query
+	fmt.Println(url)
+	c.Visit(url)
 
 	log.Printf("Scraping finished, check file %q for results\n", fName)
 }

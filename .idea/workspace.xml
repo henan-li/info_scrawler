@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5a8302d2-7397-4f38-838b-ecdfe658c6f3" name="Default Changelist" comment="" />
+    <list default="true" id="5a8302d2-7397-4f38-838b-ecdfe658c6f3" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lawFirmDetails.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/main.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/main.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/colly.go" beforeDir="false" afterPath="$PROJECT_DIR$/utils/colly.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/view/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/view/test.html" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,6 +26,9 @@
     </option>
   </component>
   <component name="GOROOT" path="C:\Go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="ProjectId" id="1Wi7gLhi84J8rJwuz23zSM4bASv" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -26,6 +39,7 @@
     <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
@@ -34,10 +48,19 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Natha\go\src\info_scrawler" />
       <recent name="C:\Users\User\go\src\info_scrawler\main" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Build.go build info_scrawler/utils">
+  <component name="RunManager" selected="Go Build.go build info_scrawler/server">
+    <configuration name="go build colly.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="info_scrawler" />
+      <working_directory value="$PROJECT_DIR$/" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/utils/colly.go" />
+      <directory value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
     <configuration name="go build info_scrawler/main" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
       <module name="info_scrawler" />
       <working_directory value="$PROJECT_DIR$/" />
@@ -64,11 +87,21 @@
       <directory value="$PROJECT_DIR$/" />
       <method v="2" />
     </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="info_scrawler" />
+      <working_directory value="$PROJECT_DIR$/" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/server/main.go" />
+      <directory value="$PROJECT_DIR$/" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Build.go build info_scrawler/server" />
+        <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build colly.go" />
         <item itemvalue="Go Build.go build info_scrawler/utils" />
         <item itemvalue="Go Build.go build info_scrawler/main" />
-        <item itemvalue="Go Build.go build info_scrawler/server" />
       </list>
     </recent_temporary>
   </component>
@@ -92,21 +125,25 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="552" y="179" key="#Go_Modules_(vgo)/0.0.1920.1040@0.0.1920.1040" timestamp="1579641566373" />
-    <state width="1877" height="212" key="GridCell.Tab.0.bottom" timestamp="1579648002830">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state width="2517" height="400" key="GridCell.Tab.0.bottom" timestamp="1579678165300">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="1877" height="212" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1579648002830" />
-    <state width="1877" height="212" key="GridCell.Tab.0.center" timestamp="1579648002830">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state width="2517" height="400" key="GridCell.Tab.0.bottom/0.0.2560.1400@0.0.2560.1400" timestamp="1579678165300" />
+    <state width="2517" height="400" key="GridCell.Tab.0.center" timestamp="1579678165300">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="1877" height="212" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1579648002830" />
-    <state width="1877" height="212" key="GridCell.Tab.0.left" timestamp="1579648002830">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state width="2517" height="400" key="GridCell.Tab.0.center/0.0.2560.1400@0.0.2560.1400" timestamp="1579678165300" />
+    <state width="2517" height="400" key="GridCell.Tab.0.left" timestamp="1579678165300">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="1877" height="212" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1579648002830" />
-    <state width="1877" height="212" key="GridCell.Tab.0.right" timestamp="1579648002830">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state width="2517" height="400" key="GridCell.Tab.0.left/0.0.2560.1400@0.0.2560.1400" timestamp="1579678165300" />
+    <state width="2517" height="400" key="GridCell.Tab.0.right" timestamp="1579678165300">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="1877" height="212" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1579648002830" />
+    <state width="2517" height="400" key="GridCell.Tab.0.right/0.0.2560.1400@0.0.2560.1400" timestamp="1579678165300" />
   </component>
 </project>
