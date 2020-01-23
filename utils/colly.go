@@ -5,19 +5,20 @@ import (
 	"fmt"
 	"github.com/gocolly/colly"
 	"log"
+	"math"
 	"os"
 	"strconv"
+	"time"
 )
 
 var (
-	baseUrl      = "http://www.szlawyers.com"
-	number       = 1
-	number2      = 1
-	c            *colly.Collector
-	writer       *csv.Writer
-	writer2      *csv.Writer
-	companyPage  map[int][]string
-	personalPage map[int][]string
+	baseUrl     = "http://www.szlawyers.com"
+	number      = 1
+	number2     = 1
+	c           *colly.Collector
+	writer      *csv.Writer
+	writer2     *csv.Writer
+	companyPage map[int][]string
 )
 
 func DoWork(query string) {
@@ -42,7 +43,7 @@ func DoWork(query string) {
 	defer file2.Close()
 	writer2 = csv.NewWriter(file2)
 	defer writer2.Flush()
-	writer2.Write([]string{"", "律师姓名", "律师性别", "所属律所", "取得律师资格证时间", "在深圳开始执业时间"})
+	writer2.Write([]string{"", "律师姓名", "律师性别", "所属律所", "取得律师资格证时间", "在深圳开始执业时间", "在深圳执业时长", "证件照"})
 
 	// Instantiate default collector
 	c = colly.NewCollector(
@@ -71,12 +72,12 @@ func DoWork(query string) {
 		row = append(row, link)
 
 		// visit company address and get workplace info
-		visitSubPage(link)
+		visitSubPage(e,link)
 		row = append(row, companyPage[1]...)
 
 		err := writer.Write(row)
 		if err != nil {
-			fmt.Println("信息写入错误！！！程序退出运行")
+			fmt.Println("公司信息写入错误！！！程序退出运行")
 			os.Exit(1)
 		}
 
@@ -89,7 +90,51 @@ func DoWork(query string) {
 		link := e.Request.AbsoluteURL(e.Attr("href"))
 		text := e.DOM.Text()
 		if text == "下一页" {
-			c.Visit(link)
+			e.Request.Visit(link)
+		}
+	})
+
+	// visit personal page
+	c.OnHTML(".lawyer_info tbody tr:nth-child(11)", func(e *colly.HTMLElement) {
+
+		urlLists := make(map[int]string)
+
+		e.ForEach("td:nth-child(2) span", func(i int, element *colly.HTMLElement) {
+			urlLists[i] = element.Request.AbsoluteURL(element.ChildAttr("a", "href"))
+		})
+
+		fmt.Println(urlLists)
+		for _, v := range urlLists {
+			flag,_ :=e.Request.HasVisited(v)
+			if !flag {
+				e.Request.Visit(v)
+			}
+		}
+
+	})
+
+	// personal page details tr:nth-child(2) td:nth-child(2) span 2 4 5 8 11
+	c.OnHTML(".list table[style*=\"word-break\"] tbody", func(e *colly.HTMLElement) {
+
+		personalRowRes := []string{""}
+		personalRowRes = append(personalRowRes, e.ChildText("tr:nth-child(2) td:nth-child(2) span span"))
+		personalRowRes = append(personalRowRes, e.ChildText("tr:nth-child(4) td:nth-child(2) span span"))
+		personalRowRes = append(personalRowRes, e.ChildText("tr:nth-child(5) td:nth-child(2) span a"))
+		personalRowRes = append(personalRowRes, e.ChildText("tr:nth-child(8) td:nth-child(2) span span"))
+
+		startTime := e.ChildText("tr:nth-child(11) td:nth-child(2) span span")
+		personalRowRes = append(personalRowRes, startTime)
+
+		dayDiffRes := getDayDiff(startTime)
+		dayDiffRes = dayDiffRes + " 天"
+		personalRowRes = append(personalRowRes,dayDiffRes)
+
+		personalRowRes = append(personalRowRes, e.Request.AbsoluteURL(e.ChildAttr("tr:nth-child(2) td:nth-child(3) img", "src")))
+
+		err := writer2.Write(personalRowRes)
+		if err != nil {
+			fmt.Println("个人信息写入错误！！！程序退出运行")
+			os.Exit(1)
 		}
 	})
 
@@ -103,46 +148,41 @@ func DoWork(query string) {
 		companyPage[num] = location
 	})
 
-	// visit personal page
-	c.OnHTML(".lawyer_info tbody tr:nth-child(11)", func(e *colly.HTMLElement) {
-
-		nameList := make(map[int]string)
-		e.ForEach("td span", func(i int, element *colly.HTMLElement) {
-			nameList[i] = element.Request.AbsoluteURL(element.ChildAttr("a", "href"))
-		})
-		//nameList := e.Request.AbsoluteURL(e.ChildAttr("td:nth-child(2) span a","href"))
-
-		for _, v := range nameList {
-			visitSubPage(v)
-		}
-	})
-
-	// personal page details
-	c.OnHTML(
-		".list table[style*=\"word-break\"] tbody", func(e *colly.HTMLElement) {
-
-			//err := writer2.Write(personalPage[1])
-			//if err != nil {
-			//	fmt.Println("信息写入错误！！！程序退出运行")
-			//	os.Exit(1)
-			//}
-			//
-			//number2 += 1
-			fmt.Println(personalPage)
-		})
-
 	url := baseUrl + query
 	c.Visit(url)
-	c.Wait()
+	//c.Wait()
 	log.Printf("Scraping finished, check file %q for results\n", fName)
+	log.Printf("Scraping finished, check file %q for results\n", fName2)
 }
 
-func visitSubPage(link string) {
+func visitSubPage(e *colly.HTMLElement, link string) {
 
 	//link := strings.Join(row[6:],"")
 	//c.Visit(link)
-	flag, _ := c.HasVisited(link)
+	flag, _ := e.Request.HasVisited(link)
 	if !flag {
-		c.Visit(link)
+		e.Request.Visit(link)
 	}
+}
+
+
+func getDayDiff(startTime string) string{
+
+	// 移除中文字符：年月日， 重新组合成 yyyy-mm-dd
+	sT := []byte(startTime)
+	year := string(sT[0:4])
+	month := string(sT[7:9])
+	day := string(sT[12:14])
+	startTimeFormat := year+"-"+month+"-"+day
+
+	a, _ := time.Parse("2006-01-02", startTimeFormat)
+
+	currentTime := time.Now().Format("2006-01-02")
+	b,_ := time.Parse("2006-01-02", currentTime)
+
+	dayDiff := b.Sub(a).Hours() / 24
+	dayDiff = math.Ceil(dayDiff)
+
+	dayDiffRes := strconv.FormatFloat(dayDiff,'f',0,64)
+	return dayDiffRes
 }
