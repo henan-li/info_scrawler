@@ -14,7 +14,7 @@ import (
 var (
 	baseUrl     = "http://www.szlawyers.com"
 	number      = 1
-	number2     = 1
+	//number2     = 1
 	c           *colly.Collector
 	writer      *csv.Writer
 	writer2     *csv.Writer
@@ -43,7 +43,7 @@ func DoWork(query string) {
 	defer file2.Close()
 	writer2 = csv.NewWriter(file2)
 	defer writer2.Flush()
-	writer2.Write([]string{"", "律师姓名", "律师性别", "所属律所", "取得律师资格证时间", "在深圳开始执业时间", "在深圳执业时长", "证件照"})
+	writer2.Write([]string{"", "律师姓名", "律师性别", "所属律所", "取得律师资格证时间", "在深圳开始执业时间", "在深圳执业时长(天)", "证件照"})
 
 	// Instantiate default collector
 	c = colly.NewCollector(
@@ -51,8 +51,8 @@ func DoWork(query string) {
 		//colly.Async(true),
 	)
 	//c.Limit(&colly.LimitRule{
-	//	Parallelism: 5,
-	//	RandomDelay: 1 * time.Second,
+	//	Parallelism: 2,
+	//	RandomDelay: 2 * time.Second,
 	//})
 
 	//c.OnRequest(func(r *colly.Request) {
@@ -72,9 +72,10 @@ func DoWork(query string) {
 		row = append(row, link)
 
 		// visit company address and get workplace info
-		visitSubPage(e,link)
+		e.Request.Visit(link)
 		row = append(row, companyPage[1]...)
 
+		fmt.Println("working on company information: ", row)
 		err := writer.Write(row)
 		if err != nil {
 			fmt.Println("公司信息写入错误！！！程序退出运行")
@@ -88,7 +89,7 @@ func DoWork(query string) {
 	c.OnHTML(".page a:last-child", func(e *colly.HTMLElement) {
 
 		link := e.Request.AbsoluteURL(e.Attr("href"))
-		text := e.DOM.Text()
+		text := e.Text
 		if text == "下一页" {
 			e.Request.Visit(link)
 		}
@@ -97,19 +98,33 @@ func DoWork(query string) {
 	// visit personal page
 	c.OnHTML(".lawyer_info tbody tr:nth-child(11)", func(e *colly.HTMLElement) {
 
-		urlLists := make(map[int]string)
+		urls := e.ChildAttrs("td:nth-child(2) span a", "href")
 
-		e.ForEach("td:nth-child(2) span", func(i int, element *colly.HTMLElement) {
-			urlLists[i] = element.Request.AbsoluteURL(element.ChildAttr("a", "href"))
-		})
+		//fmt.Println(len(test),test)
+		for _, v := range urls {
 
-		fmt.Println(urlLists)
-		for _, v := range urlLists {
-			flag,_ :=e.Request.HasVisited(v)
+			url := baseUrl + v
+			flag, _ := e.Request.HasVisited(url)
+
 			if !flag {
-				e.Request.Visit(v)
+				e.Request.Visit(url)
 			}
 		}
+		//urlLists := make(map[int]string)
+		//
+		//e.ForEach("td:nth-child(2) span", func(i int, element *colly.HTMLElement) {
+		//	//urlLists[i] = element.Request.AbsoluteURL(element.ChildAttr("a", "href"))
+		//	url := element.Request.AbsoluteURL(element.ChildAttr("a", "href"))
+		//
+		//})
+		//
+		//fmt.Println(urlLists)
+		//for _, v := range urlLists {
+		//	flag,_ :=e.Request.HasVisited(v)
+		//	if !flag {
+		//		e.Request.Visit(v)
+		//	}
+		//}
 
 	})
 
@@ -125,12 +140,14 @@ func DoWork(query string) {
 		startTime := e.ChildText("tr:nth-child(11) td:nth-child(2) span span")
 		personalRowRes = append(personalRowRes, startTime)
 
-		dayDiffRes := getDayDiff(startTime)
-		dayDiffRes = dayDiffRes + " 天"
-		personalRowRes = append(personalRowRes,dayDiffRes)
+		if startTime != ""{
+			dayDiffRes := getDayDiff(startTime)
+			personalRowRes = append(personalRowRes, dayDiffRes)
+			personalRowRes = append(personalRowRes, e.Request.AbsoluteURL(e.ChildAttr("tr:nth-child(2) td:nth-child(3) img", "src")))
 
-		personalRowRes = append(personalRowRes, e.Request.AbsoluteURL(e.ChildAttr("tr:nth-child(2) td:nth-child(3) img", "src")))
+		}
 
+		fmt.Println("working on personal details: ", personalRowRes)
 		err := writer2.Write(personalRowRes)
 		if err != nil {
 			fmt.Println("个人信息写入错误！！！程序退出运行")
@@ -155,34 +172,23 @@ func DoWork(query string) {
 	log.Printf("Scraping finished, check file %q for results\n", fName2)
 }
 
-func visitSubPage(e *colly.HTMLElement, link string) {
-
-	//link := strings.Join(row[6:],"")
-	//c.Visit(link)
-	flag, _ := e.Request.HasVisited(link)
-	if !flag {
-		e.Request.Visit(link)
-	}
-}
-
-
-func getDayDiff(startTime string) string{
+func getDayDiff(startTime string) string {
 
 	// 移除中文字符：年月日， 重新组合成 yyyy-mm-dd
 	sT := []byte(startTime)
 	year := string(sT[0:4])
 	month := string(sT[7:9])
 	day := string(sT[12:14])
-	startTimeFormat := year+"-"+month+"-"+day
+	startTimeFormat := year + "-" + month + "-" + day
 
 	a, _ := time.Parse("2006-01-02", startTimeFormat)
 
 	currentTime := time.Now().Format("2006-01-02")
-	b,_ := time.Parse("2006-01-02", currentTime)
+	b, _ := time.Parse("2006-01-02", currentTime)
 
 	dayDiff := b.Sub(a).Hours() / 24
 	dayDiff = math.Ceil(dayDiff)
 
-	dayDiffRes := strconv.FormatFloat(dayDiff,'f',0,64)
+	dayDiffRes := strconv.FormatFloat(dayDiff, 'f', 0, 64)
 	return dayDiffRes
 }

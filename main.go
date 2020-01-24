@@ -4,19 +4,25 @@ import (
 	"fmt"
 	"html/template"
 	"info_scrawler/utils"
+	"info_scrawler/view"
 	"log"
 	"net/http"
 	_ "strings"
 )
 
 func main() {
-	// 请求文件路径转成服务器路径
-	//http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("view/index.html"))))
-	// 路由处理
+
+	dirs := []string{"view"} // 设置需要释放的目录
+	for _, dir := range dirs {
+		// 解压dir目录到当前目录
+		if err := view.RestoreAssets("./", dir); err != nil {
+			break
+		}
+	}
+
 	http.HandleFunc("/", indexPage)    // display form
 	http.HandleFunc("/info", infoPage) // handle get request
 
-	// 启动服务
 	fmt.Println("server will start and listen at localhost:8080\nuse url: localhost:8080")
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
@@ -42,4 +48,3 @@ func infoPage(w http.ResponseWriter, r *http.Request) {
 	// write content into .csv file
 	utils.DoWork(str)
 }
-
