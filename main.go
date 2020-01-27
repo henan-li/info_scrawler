@@ -40,11 +40,16 @@ func indexPage(w http.ResponseWriter, r *http.Request) {
 // 处理表单参数
 func infoPage(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
+
 	var str = "/searchLawFirm?"
 	for k, v := range query {
 		str += k + "=" + v[0] + "&"
 	}
 
+	var firmType string
+	if query["lawFirmType"][0] == "235bbe7b44ea4eb381e816e7436f8afa"{
+		firmType = "personal"
+	}
 	// write content into .csv file
-	utils.DoWork(str)
+	utils.DoWork(str,firmType)
 }

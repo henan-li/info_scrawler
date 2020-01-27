@@ -21,7 +21,7 @@ var (
 	companyPage map[int][]string
 )
 
-func DoWork(query string) {
+func DoWork(query string,firmType string) {
 
 	fName := "lawFirmDetails.csv"
 	file, err := os.Create(fName)
@@ -63,6 +63,18 @@ func DoWork(query string) {
 	//	fmt.Println("response with code: ", r.StatusCode)
 	//})
 
+
+	var addressSelector string
+	var personalSelector string
+	if firmType == "personal"{
+		addressSelector = ".lawyer_info tbody tr:nth-child(11)"
+		personalSelector = ".lawyer_info tbody tr:nth-child(10)"
+	}else{
+		addressSelector = ".lawyer_info tbody tr:nth-child(12)"
+		personalSelector = ".lawyer_info tbody tr:nth-child(11)"
+	}
+
+
 	c.OnHTML(".tab_list tr:not(:first-child, :last-child)", func(e *colly.HTMLElement) {
 
 		// main page
@@ -96,7 +108,7 @@ func DoWork(query string) {
 	})
 
 	// visit personal page
-	c.OnHTML(".lawyer_info tbody tr:nth-child(11)", func(e *colly.HTMLElement) {
+	c.OnHTML(personalSelector, func(e *colly.HTMLElement) {
 
 		urls := e.ChildAttrs("td:nth-child(2) span a", "href")
 
@@ -156,7 +168,8 @@ func DoWork(query string) {
 	})
 
 	// company page details
-	c.OnHTML(".lawyer_info tbody tr:nth-child(12)", func(e *colly.HTMLElement) {
+
+	c.OnHTML(addressSelector, func(e *colly.HTMLElement) {
 
 		companyPage = make(map[int][]string)
 		num := 1
