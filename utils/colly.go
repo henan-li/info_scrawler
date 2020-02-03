@@ -171,11 +171,13 @@ func DoWork(query string, firmType string) {
 
 		}
 
-		fmt.Println("working on personal details: ", personalRowRes)
-		err := writer2.Write(personalRowRes)
-		if err != nil {
-			fmt.Println("个人信息写入错误！！！程序退出运行")
-			os.Exit(1)
+		if personalRowRes[1] != ""{
+			fmt.Println("working on personal details: ", personalRowRes)
+			err := writer2.Write(personalRowRes)
+			if err != nil {
+				fmt.Println("个人信息写入错误！！！程序退出运行")
+				os.Exit(1)
+			}
 		}
 	})
 
