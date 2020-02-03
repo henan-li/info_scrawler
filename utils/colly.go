@@ -12,16 +12,16 @@ import (
 )
 
 var (
-	baseUrl     = "http://www.szlawyers.com"
-	number      = 1
-	//number2     = 1
+	baseUrl = "http://www.szlawyers.com"
+	number  = 1
 	c           *colly.Collector
+	p           *colly.Collector
 	writer      *csv.Writer
 	writer2     *csv.Writer
 	companyPage map[int][]string
 )
 
-func DoWork(query string,firmType string) {
+func DoWork(query string, firmType string) {
 
 	fName := "lawFirmDetails.csv"
 	file, err := os.Create(fName)
@@ -45,35 +45,34 @@ func DoWork(query string,firmType string) {
 	defer writer2.Flush()
 	writer2.Write([]string{"", "律师姓名", "律师性别", "所属律所", "取得律师资格证时间", "在深圳开始执业时间", "在深圳执业时长(天)", "证件照"})
 
-	// Instantiate default collector
+	// init company collector
 	c = colly.NewCollector(
 		colly.UserAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"),
-		//colly.Async(true),
 	)
-	//c.Limit(&colly.LimitRule{
-	//	Parallelism: 2,
-	//	RandomDelay: 2 * time.Second,
-	//})
 
-	//c.OnRequest(func(r *colly.Request) {
-	//	fmt.Println("Visiting", r.URL.String())
-	//})
-
-	//c.OnResponse(func(r *colly.Response) {
-	//	fmt.Println("response with code: ", r.StatusCode)
-	//})
+	// init personal collector
+	p = colly.NewCollector(
+		colly.UserAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"),
+		colly.Async(true),
+	)
+	p.Limit(&colly.LimitRule{
+		Parallelism: 5,
+		RandomDelay: 2 * time.Second,
+	})
 
 
 	var addressSelector string
 	var personalSelector string
-	if firmType == "personal"{
+	if firmType == "personal" {
 		addressSelector = ".lawyer_info tbody tr:nth-child(11)"
 		personalSelector = ".lawyer_info tbody tr:nth-child(10)"
-	}else{
+	} else if firmType == "group" {
 		addressSelector = ".lawyer_info tbody tr:nth-child(12)"
 		personalSelector = ".lawyer_info tbody tr:nth-child(11)"
+	} else {
+		addressSelector = ""
+		personalSelector = ""
 	}
-
 
 	c.OnHTML(".tab_list tr:not(:first-child, :last-child)", func(e *colly.HTMLElement) {
 
@@ -108,40 +107,53 @@ func DoWork(query string,firmType string) {
 	})
 
 	// visit personal page
-	c.OnHTML(personalSelector, func(e *colly.HTMLElement) {
+	if personalSelector != "" {
+		c.OnHTML(personalSelector, func(e *colly.HTMLElement) {
 
-		urls := e.ChildAttrs("td:nth-child(2) span a", "href")
+			urls := e.ChildAttrs("td:nth-child(2) span a", "href")
 
-		//fmt.Println(len(test),test)
-		for _, v := range urls {
+			for _, v := range urls {
 
-			url := baseUrl + v
-			flag, _ := e.Request.HasVisited(url)
+				url := baseUrl + v
+				flag, _ := e.Request.HasVisited(url)
 
-			if !flag {
-				e.Request.Visit(url)
+				if !flag {
+					p.Visit(url)
+				}
 			}
-		}
-		//urlLists := make(map[int]string)
-		//
-		//e.ForEach("td:nth-child(2) span", func(i int, element *colly.HTMLElement) {
-		//	//urlLists[i] = element.Request.AbsoluteURL(element.ChildAttr("a", "href"))
-		//	url := element.Request.AbsoluteURL(element.ChildAttr("a", "href"))
-		//
-		//})
-		//
-		//fmt.Println(urlLists)
-		//for _, v := range urlLists {
-		//	flag,_ :=e.Request.HasVisited(v)
-		//	if !flag {
-		//		e.Request.Visit(v)
-		//	}
-		//}
+		})
+	} else {
+		c.OnHTML(".lawyer_info tbody", func(e *colly.HTMLElement) {
+			a := e.ChildTexts("tr:nth-child(10) td")
+			if a[0] == "执业律师"{
+				urls := e.ChildAttrs(".lawyer_info tbody tr:nth-child(10) td:nth-child(2) span a", "href")
+				for _, v := range urls {
 
-	})
+					url := baseUrl + v
+					flag, _ := e.Request.HasVisited(url)
+
+					if !flag {
+						p.Visit(url)
+					}
+				}
+			}else{
+				urls := e.ChildAttrs(".lawyer_info tbody tr:nth-child(11) td:nth-child(2) span a", "href")
+				for _, v := range urls {
+
+					url := baseUrl + v
+					flag, _ := e.Request.HasVisited(url)
+
+					if !flag {
+						p.Visit(url)
+					}
+				}
+			}
+		})
+	}
+
 
 	// personal page details tr:nth-child(2) td:nth-child(2) span 2 4 5 8 11
-	c.OnHTML(".list table[style*=\"word-break\"] tbody", func(e *colly.HTMLElement) {
+	p.OnHTML(".list table[style*=\"word-break\"] tbody", func(e *colly.HTMLElement) {
 
 		personalRowRes := []string{""}
 		personalRowRes = append(personalRowRes, e.ChildText("tr:nth-child(2) td:nth-child(2) span span"))
@@ -152,7 +164,7 @@ func DoWork(query string,firmType string) {
 		startTime := e.ChildText("tr:nth-child(11) td:nth-child(2) span span")
 		personalRowRes = append(personalRowRes, startTime)
 
-		if startTime != ""{
+		if startTime != "" {
 			dayDiffRes := getDayDiff(startTime)
 			personalRowRes = append(personalRowRes, dayDiffRes)
 			personalRowRes = append(personalRowRes, e.Request.AbsoluteURL(e.ChildAttr("tr:nth-child(2) td:nth-child(3) img", "src")))
@@ -168,19 +180,36 @@ func DoWork(query string,firmType string) {
 	})
 
 	// company page details
-
-	c.OnHTML(addressSelector, func(e *colly.HTMLElement) {
-
-		companyPage = make(map[int][]string)
-		num := 1
-		location := e.ChildTexts("td")
-		location = location[1:]
-		companyPage[num] = location
-	})
+	if addressSelector != "" {
+		c.OnHTML(addressSelector, func(e *colly.HTMLElement) {
+			companyPage = make(map[int][]string)
+			num := 1
+			location := e.ChildTexts("td")
+			location = location[1:]
+			companyPage[num] = location
+		})
+	} else {
+		c.OnHTML(".lawyer_info tbody", func(e *colly.HTMLElement) {
+			a := e.ChildTexts("tr:nth-child(11) td")
+			if a[0] == "办公地址"{
+				companyPage = make(map[int][]string)
+				num := 1
+				location := a
+				location = location[1:]
+				companyPage[num] = location
+			}else{
+				companyPage = make(map[int][]string)
+				num := 1
+				location := e.ChildTexts("tr:nth-child(12) td")
+				location = location[1:]
+				companyPage[num] = location
+			}
+		})
+	}
 
 	url := baseUrl + query
 	c.Visit(url)
-	//c.Wait()
+	p.Wait()
 	log.Printf("Scraping finished, check file %q for results\n", fName)
 	log.Printf("Scraping finished, check file %q for results\n", fName2)
 }

@@ -49,6 +49,10 @@ func infoPage(w http.ResponseWriter, r *http.Request) {
 	var firmType string
 	if query["lawFirmType"][0] == "235bbe7b44ea4eb381e816e7436f8afa"{
 		firmType = "personal"
+	}else if query["lawFirmType"][0] == "592f86a85a9b4b3d98e24db19f3ae93b"{
+		firmType = "group"
+	}else{
+		firmType = ""
 	}
 	// write content into .csv file
 	utils.DoWork(str,firmType)
